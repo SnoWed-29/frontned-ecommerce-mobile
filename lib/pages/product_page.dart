@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class ProductPage extends StatelessWidget {
   final Map<String, String> product;
 
-  ProductPage({required this.product});
+  const ProductPage({super.key, required this.product});
 
   @override
   Widget build(BuildContext context) {
@@ -63,11 +63,11 @@ class ProductPage extends StatelessWidget {
           ),
           
           // Description
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
             child: Text(
               'Product description goes here. It could be a detailed overview of the product features, materials, size, etc.',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 16,
                 color: Colors.black87,
               ),

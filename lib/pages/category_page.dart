@@ -34,6 +34,8 @@ class CategoryPage extends StatelessWidget {
     },
   ];
 
+   CategoryPage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -110,7 +112,7 @@ class CategoryPage extends StatelessWidget {
                             height: 50, // Set fixed height for the button
                             margin: const EdgeInsets.only(top: 8),
                             decoration: BoxDecoration(
-                              gradient: LinearGradient(
+                              gradient: const LinearGradient(
                                 colors: [Colors.pink, Colors.orange],
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
@@ -120,7 +122,7 @@ class CategoryPage extends StatelessWidget {
                                 BoxShadow(
                                   color: Colors.black.withOpacity(0.2),
                                   blurRadius: 8,
-                                  offset: Offset(0, 4),
+                                  offset: const Offset(0, 4),
                                 ),
                               ],
                             ),

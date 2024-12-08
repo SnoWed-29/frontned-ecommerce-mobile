@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class FloatingCartIcon extends StatelessWidget {
   final VoidCallback onPressed;
 
-  const FloatingCartIcon({Key? key, required this.onPressed}) : super(key: key);
+  const FloatingCartIcon({super.key, required this.onPressed});
 
   @override
   Widget build(BuildContext context) {
