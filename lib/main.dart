@@ -40,8 +40,7 @@ class MyApp extends StatelessWidget {
       routes: {
         '/intro_page': (context) => const IntroPage(),
         '/shop_page': (context) => const ShopPage(),
-        '/cart_page': (context) => const CartPage(),
-        '/category_page': (context) =>  CategoryPage(),
+        '/category_page': (context) => CategoryPage(),
         '/login_page': (context) => const LoginPage(),
         '/register_page': (context) => const RegisterPage(),
       },
@@ -51,6 +50,13 @@ class MyApp extends StatelessWidget {
           return MaterialPageRoute(
             builder: (context) {
               return ProductPage(productId: productId ?? 0);
+            },
+          );
+        } else if (settings.name == '/cart_page') {
+          final userId = settings.arguments as int?;
+          return MaterialPageRoute(
+            builder: (context) {
+              return CartPage(userId: userId ?? 0);
             },
           );
         }
