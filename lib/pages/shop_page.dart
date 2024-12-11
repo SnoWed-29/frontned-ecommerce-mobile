@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import '../models/product.dart';
 import '../services/product_service.dart';
-import '../components/my_drawer.dart';
 import '../pages/product_page.dart';
+import './cart_page.dart';
+import '../services/auth_service.dart'; // Import the AuthService
 
 class ShopPage extends StatefulWidget {
   const ShopPage({super.key});
@@ -19,18 +20,33 @@ class _ShopPageState extends State<ShopPage> {
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final ProductService productService = ProductService();
+  final AuthService authService = AuthService(); // Instance of AuthService
+
+  int? _userId; // To store the logged-in user's ID
 
   @override
   void initState() {
     super.initState();
+    _fetchUserData(); // Fetch user data on initialization
     _fetchProducts(); // Load all products initially
     _fetchCategories();
+  }
+
+  // Fetch the logged-in user's data
+  void _fetchUserData() async {
+    try {
+      int? userId = await authService.getUserId(); // Assume `getUserId()` exists
+      setState(() {
+        _userId = userId;
+      });
+    } catch (e) {
+      print('Error fetching user data: $e');
+    }
   }
 
   // Fetch categories from the provided API endpoint
   void _fetchCategories() async {
     try {
-      // Replace this with the actual API call to fetch categories
       List<String> categories = await productService.fetchCategories();
       setState(() {
         _categories = categories;
@@ -98,7 +114,19 @@ class _ShopPageState extends State<ShopPage> {
         actions: [
           IconButton(
             icon: const Icon(Icons.shopping_cart, color: Colors.black),
-            onPressed: () {},
+            onPressed: () {
+              if (_userId != null) {
+                Navigator.pushNamed(
+                  context,
+                  '/cart_page',
+                  arguments: _userId, // Pass the actual user ID
+                );
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('User not logged in!')),
+                );
+              }
+            },
           ),
         ],
       ),
@@ -125,7 +153,6 @@ class _ShopPageState extends State<ShopPage> {
                 const SizedBox(height: 16),
 
                 // Horizontal Category Scroller
-
                 SizedBox(
                   height: 40,
                   child: ListView.builder(

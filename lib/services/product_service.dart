@@ -131,4 +131,25 @@ class ProductService {
       throw Exception('Failed to load products for category $categoryId');
     }
   }
+  // Fetch cart items
+Future<List<dynamic>> fetchCartItems(int userId) async {
+  final token = await _authService.getToken(); // Get the token from AuthService
+
+  if (token == null) {
+    throw Exception('No token found. Please log in.');
+  }
+
+  final response = await http.get(
+    Uri.parse('$_baseUrl/cart/$userId'),
+    headers: {
+      'Authorization': 'Bearer $token', // Include token in the header
+    },
+  );
+
+  if (response.statusCode == 200) {
+    return json.decode(response.body);
+  } else {
+    throw Exception('Failed to load cart items');
+  }
+}
 }
