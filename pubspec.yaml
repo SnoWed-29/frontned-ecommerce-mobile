@@ -10,6 +10,8 @@ dependencies:
   flutter:
     sdk: flutter
   http: ^1.2.2
+  flutter_secure_storage: ^5.0.2
+  shared_preferences: ^2.0.17
   google_fonts: ^5.0.0
   # flutter_neumorphic: ^3.2.0 # This dependency is removed as per your instructions
 
