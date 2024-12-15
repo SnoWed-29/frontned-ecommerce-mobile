@@ -35,7 +35,8 @@ class _ShopPageState extends State<ShopPage> {
   // Fetch the logged-in user's data
   void _fetchUserData() async {
     try {
-      int? userId = await authService.getUserId(); // Assume `getUserId()` exists
+      int? userId =
+          await authService.getUserId(); // Assume `getUserId()` exists
       setState(() {
         _userId = userId;
       });
@@ -275,7 +276,7 @@ class _ShopPageState extends State<ShopPage> {
                                       style: const TextStyle(
                                         fontSize: 16,
                                         fontWeight: FontWeight.bold,
-                                        color: Colors.black,
+                                        color: Colors.teal,
                                       ),
                                     ),
                                     const SizedBox(height: 4),
