@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/product_service.dart';
+import './order_confirmation_page.dart';
 
 class CartPage extends StatefulWidget {
   final int userId;
@@ -21,28 +22,42 @@ class _CartPageState extends State<CartPage> {
     _cartItems = _productService.fetchCartItems(widget.userId);
   }
 
-  // Method to calculate the total price
+  // Calculate the total price of cart items
   void _calculateTotal(List<dynamic> cartItems) {
     double total = 0.0;
 
     for (var item in cartItems) {
-      // Parse the price as double
       double price = double.tryParse(item['price'].toString()) ?? 0.0;
       int quantity = item['pivot']['quantity'] ?? 0;
-
-      // Debugging: Print values to ensure they are correct
-      print('Price: $price, Quantity: $quantity');
-
       total += price * quantity;
     }
 
-    // Update the totalPrice state
     setState(() {
       totalPrice = total;
     });
+  }
 
-    // Debugging: Print total price
-    print('Total Price Calculated: $totalPrice');
+  // Method to delete a product from the cart
+  Future<void> _deleteProduct(int cartId, int productId) async {
+    try {
+      final response =
+          await _productService.deleteProductFromCart(cartId, productId);
+      if (response['message'] != null) {
+        setState(() {
+          _cartItems = _productService
+              .fetchCartItems(widget.userId); // Refresh cart items
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(response['message'])),
+        );
+      } else {
+        throw Exception(response['error'] ?? 'Error deleting product');
+      }
+    } catch (error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to delete product: $error')),
+      );
+    }
   }
 
   @override
@@ -58,13 +73,12 @@ class _CartPageState extends State<CartPage> {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
+            return const Center(child: Text('Error loading cart items.'));
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
             return const Center(child: Text('Your cart is empty.'));
           }
 
           final cartItems = snapshot.data!;
-          // Calculate total when cart items are fetched
           WidgetsBinding.instance.addPostFrameCallback((_) {
             _calculateTotal(cartItems);
           });
@@ -96,7 +110,6 @@ class _CartPageState extends State<CartPage> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Product Name
                             Text(
                               item['name'],
                               style: const TextStyle(
@@ -104,10 +117,7 @@ class _CartPageState extends State<CartPage> {
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-
                             const SizedBox(height: 5),
-
-                            // Price
                             Text(
                               '\$${item['price']}',
                               style: const TextStyle(
@@ -128,15 +138,13 @@ class _CartPageState extends State<CartPage> {
                           fontWeight: FontWeight.w600,
                         ),
                       ),
-
-                      // Spacer between Quantity and Delete Button
                       const SizedBox(width: 20),
 
                       // Delete Button
                       IconButton(
                         icon: const Icon(Icons.close, color: Colors.red),
                         onPressed: () {
-                          // Handle item removal logic
+                          _deleteProduct(item['pivot']['cart_id'], item['id']);
                         },
                       ),
                     ],
@@ -154,7 +162,6 @@ class _CartPageState extends State<CartPage> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            // Total Price
             Text(
               'Total Price: \$${totalPrice.toStringAsFixed(2)}',
               style: const TextStyle(
@@ -162,16 +169,20 @@ class _CartPageState extends State<CartPage> {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            // Confirm Order Button
             ElevatedButton(
               onPressed: () {
-                // Handle order confirmation logic here
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Order Confirmed!')),
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => OrderConfirmationPage(
+                      userId: widget.userId,
+                      totalPrice: totalPrice,
+                    ),
+                  ),
                 );
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.teal,  // Use backgroundColor instead of primary
+                backgroundColor: Colors.teal,
               ),
               child: const Text(
                 'Confirm Order',
