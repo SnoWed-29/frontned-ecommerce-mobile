@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart'; // Import SharedPre
 
 class AuthService {
   final String apiUrl = "http://127.0.0.1:8000/api/login"; // Replace with your backend URL
+  final String registerUrl = "http://127.0.0.1:8000/api/register"; // Backend register route
 
   Future<Map<String, dynamic>> login(String email, String password) async {
     try {
@@ -31,6 +32,34 @@ class AuthService {
     } catch (e) {
       print("Error occurred during login: $e");
       throw Exception("Error during login: $e");
+    }
+  }
+Future<Map<String, dynamic>> registerAndLogin(String name, String email, String password, String passwordConfirmation) async {
+    try {
+      // Step 1: Register the user
+      final response = await http.post(
+        Uri.parse(registerUrl),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "name": name,
+          "email": email,
+          "password": password,
+          "password_confirmation": passwordConfirmation,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        print("User registered successfully!");
+
+        // Step 2: Automatically log the user in after successful registration
+        return await login(email, password);
+      } else {
+        print("Registration failed: ${response.statusCode} - ${response.body}");
+        throw Exception("Failed to register. Status code: ${response.statusCode}");
+      }
+    } catch (e) {
+      print("Error occurred during registration: $e");
+      throw Exception("Error during registration: $e");
     }
   }
 

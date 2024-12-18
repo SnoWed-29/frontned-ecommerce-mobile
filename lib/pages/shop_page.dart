@@ -4,6 +4,8 @@ import '../services/product_service.dart';
 import '../pages/product_page.dart';
 import './cart_page.dart';
 import '../services/auth_service.dart'; // Import the AuthService
+import '../components/drawer.dart'; // Import the custom AppDrawer
+import 'package:cached_network_image/cached_network_image.dart';
 
 class ShopPage extends StatefulWidget {
   const ShopPage({super.key});
@@ -18,7 +20,6 @@ class _ShopPageState extends State<ShopPage> {
   List<String> _categories = []; // Fetch categories dynamically
   int _selectedCategoryIndex = 0; // To keep track of the selected category
 
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final ProductService productService = ProductService();
   final AuthService authService = AuthService(); // Instance of AuthService
 
@@ -98,23 +99,24 @@ class _ShopPageState extends State<ShopPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      key: _scaffoldKey,
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: Colors.transparent,
-        leading: IconButton(
-          icon: const Icon(Icons.menu, color: Colors.black),
-          onPressed: () {
-            _scaffoldKey.currentState?.openDrawer();
-          },
+        backgroundColor: Colors.teal,
+        leading: Builder(
+          builder: (context) => IconButton(
+            icon: const Icon(Icons.menu, color: Colors.white),
+            onPressed: () {
+              Scaffold.of(context).openDrawer();
+            },
+          ),
         ),
         title: const Text(
           "Discover",
-          style: TextStyle(color: Colors.black, fontSize: 20),
+          style: TextStyle(color: Colors.white, fontSize: 20),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.shopping_cart, color: Colors.black),
+            icon: const Icon(Icons.shopping_cart, color: Colors.white),
             onPressed: () {
               if (_userId != null) {
                 Navigator.pushNamed(
@@ -131,26 +133,11 @@ class _ShopPageState extends State<ShopPage> {
           ),
         ],
       ),
+      drawer: const AppDrawer(), // Replace the current drawer with AppDrawer
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : Column(
               children: [
-                // Search Bar
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: TextField(
-                    decoration: InputDecoration(
-                      hintText: "Search...",
-                      prefixIcon: const Icon(Icons.search),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide.none,
-                      ),
-                      filled: true,
-                      fillColor: Colors.grey[200],
-                    ),
-                  ),
-                ),
                 const SizedBox(height: 16),
 
                 // Horizontal Category Scroller
@@ -181,7 +168,7 @@ class _ShopPageState extends State<ShopPage> {
                           margin: const EdgeInsets.only(right: 8),
                           decoration: BoxDecoration(
                             color: _selectedCategoryIndex == index
-                                ? Colors.green
+                                ? Colors.teal
                                 : Colors.grey[200],
                             borderRadius: BorderRadius.circular(20),
                           ),
@@ -217,10 +204,9 @@ class _ShopPageState extends State<ShopPage> {
                     itemCount: _products.length,
                     itemBuilder: (context, index) {
                       final product = _products[index];
-                      final imageUrl = (product.images.isNotEmpty &&
-                              product.images[0]?.path is String)
-                          ? product.images[0].path
-                          : 'https://via.placeholder.com/150';
+                      final String baseUrl =
+                          'http://127.0.0.1:8000/'; // Replace with your API's base URL
+                      final imageUrl = product.images[0].path;
 
                       return GestureDetector(
                         onTap: () {
@@ -252,17 +238,12 @@ class _ShopPageState extends State<ShopPage> {
                                 child: ClipRRect(
                                   borderRadius: const BorderRadius.vertical(
                                       top: Radius.circular(12)),
-                                  child: Image.network(
-                                    imageUrl,
-                                    fit: BoxFit.cover,
-                                    width: double.infinity,
-                                    errorBuilder: (context, error, stackTrace) {
-                                      return const Icon(
-                                        Icons.broken_image,
-                                        color: Colors.grey,
-                                        size: 50,
-                                      );
-                                    },
+                                  child: CachedNetworkImage(
+                                    imageUrl: imageUrl,
+                                    placeholder: (context, url) =>
+                                        CircularProgressIndicator(),
+                                    errorWidget: (context, url, error) =>
+                                        Icon(Icons.error),
                                   ),
                                 ),
                               ),
@@ -284,7 +265,8 @@ class _ShopPageState extends State<ShopPage> {
                                       '\$${product.price}',
                                       style: const TextStyle(
                                         fontSize: 14,
-                                        color: Colors.grey,
+                                        color: Colors.black,
+                                        fontWeight: FontWeight.w700,
                                       ),
                                     ),
                                   ],
@@ -296,7 +278,7 @@ class _ShopPageState extends State<ShopPage> {
                       );
                     },
                   ),
-                ),
+                )
               ],
             ),
     );

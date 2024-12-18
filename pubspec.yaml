@@ -15,6 +15,7 @@ dependencies:
   shared_preferences: ^2.0.17
   google_fonts: ^5.0.0
   image_picker: ^0.8.6
+  cached_network_image: ^3.4.1
   # flutter_neumorphic: ^3.2.0 # This dependency is removed as per your instructions
 
 dev_dependencies:

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http; // For making API calls
 import '../services/product_service.dart';
+import '../services/auth_service.dart'; // Import auth service for getUserId
 
 // Mobile imports
 import 'dart:io' show File; // Mobile-only import
@@ -17,6 +18,7 @@ class AddProductPage extends StatefulWidget {
 class _AddProductPageState extends State<AddProductPage> {
   final _formKey = GlobalKey<FormState>();
   final ProductService _productService = ProductService();
+  final AuthService _authService = AuthService(); // Add AuthService instance
 
   String _name = '';
   String _description = '';
@@ -60,35 +62,44 @@ class _AddProductPageState extends State<AddProductPage> {
     }
   }
 
- // For Web: Pick Image
-// For Web: Pick Image
-void _pickImageForWeb() async {
-  html.FileUploadInputElement uploadInput = html.FileUploadInputElement();
-  uploadInput.accept = 'image/*';
-  uploadInput.click();
+  // For Web: Pick Image
+  void _pickImageForWeb() async {
+    html.FileUploadInputElement uploadInput = html.FileUploadInputElement();
+    uploadInput.accept = 'image/*';
+    uploadInput.click();
 
-  uploadInput.onChange.listen((e) async {
-    final files = uploadInput.files;
-    if (files!.isEmpty) return;
+    uploadInput.onChange.listen((e) async {
+      final files = uploadInput.files;
+      if (files!.isEmpty) return;
 
-    final reader = html.FileReader();
-    reader.readAsDataUrl(files[0] as html.File);
-    reader.onLoadEnd.listen((e) {
-      final base64String = reader.result as String;
-      final base64Data = base64String.split(',').last; // Remove the "data:image/jpeg;base64," part
-      final imageBytes = base64.decode(base64Data); // Decode to Uint8List
-      setState(() {
-        _imageBytes.add(imageBytes); // Add the Uint8List to your list
+      final reader = html.FileReader();
+      reader.readAsDataUrl(files[0] as html.File);
+      reader.onLoadEnd.listen((e) {
+        final base64String = reader.result as String;
+        final base64Data = base64String.split(',').last; // Remove the "data:image/jpeg;base64," part
+        final imageBytes = base64.decode(base64Data); // Decode to Uint8List
+        setState(() {
+          _imageBytes.add(imageBytes); // Add the Uint8List to your list
+        });
       });
     });
-  });
-}
+  }
+
   // Submit Form
   void _submitForm() async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
 
       try {
+        // Fetch the current logged-in user ID
+        int? userId = await _authService.getUserId();
+        if (userId == null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('User not logged in')),
+          );
+          return;
+        }
+
         List<dynamic> imagePaths = [];
         if (kIsWeb) {
           // For Web: Send the image data (Uint8List)
@@ -103,12 +114,14 @@ void _pickImageForWeb() async {
           }).toList();
         }
 
+        // Send the product details along with the user ID
         await _productService.addProduct(
           name: _name,
           description: _description,
           price: _price,
           categoryIds: _selectedCategories, // Pass the selected category IDs
           imagePaths: imagePaths,
+          userId: userId, // Include user ID in the request
         );
 
         ScaffoldMessenger.of(context).showSnackBar(
